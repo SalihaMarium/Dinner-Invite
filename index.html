@@ -1,443 +1,184 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Volume2, 
-  VolumeX, 
-  Globe, 
-  Send, 
-  Share2, 
-  CheckCircle2, 
-  Sparkles,
-  RotateCcw
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Post-Wedding Dinner Invitation | Wasim Raza & Zebun Nisa</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel Standalone (for JSX parsing in browser) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Google Fonts for Urdu Calligraphy & English Serif -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gulzar&family=Noto+Nastaliq+Urdu:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 
-// Bespoke SVG Arabesque Corner Filigree
-const ArabesqueCorner = ({ className = "" }) => (
-  <svg viewBox="0 0 100 100" className={`w-12 h-12 sm:w-16 sm:h-16 ${className}`} fill="none">
-    <path d="M0,0 L100,0 L100,6 C50,6 6,50 6,100 L0,100 Z" fill="url(#goldGradient)" opacity="0.9"/>
-    <path d="M12,12 C20,35 35,50 60,60 C40,65 25,80 20,100" stroke="url(#goldGradient)" strokeWidth="1.5" fill="none"/>
-    <circle cx="25" cy="25" r="3" fill="#D4AF37"/>
-    <circle cx="45" cy="15" r="2" fill="#F3E5AB"/>
-    <circle cx="15" cy="45" r="2" fill="#F3E5AB"/>
-    <path d="M8,8 L92,8 L92,12 L12,12 L12,92 L8,92 Z" fill="url(#goldGradient)" opacity="0.5"/>
-  </svg>
-);
-
-// Bespoke Islamic Geometric Mandala / Rosette Centerpiece
-const IslamicRosette = ({ className = "" }) => (
-  <svg viewBox="0 0 200 200" className={`w-20 h-20 sm:w-28 sm:h-28 ${className}`}>
-    <defs>
-      <radialGradient id="rosetteGlow" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor="#FFF2B2" stopOpacity="0.8"/>
-        <stop offset="50%" stopColor="#D4AF37" stopOpacity="0.4"/>
-        <stop offset="100%" stopColor="#8B6508" stopOpacity="0"/>
-      </radialGradient>
-      <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#FFE082" />
-        <stop offset="30%" stopColor="#D4AF37" />
-        <stop offset="70%" stopColor="#AA7C11" />
-        <stop offset="100%" stopColor="#6A4E0B" />
-      </linearGradient>
-    </defs>
-    <circle cx="100" cy="100" r="95" fill="url(#rosetteGlow)" />
-    <g stroke="url(#goldGradient)" strokeWidth="1.5" fill="none">
-      {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg) => (
-        <g key={deg} transform={`rotate(${deg} 100 100)`}>
-          <path d="M100,10 C115,40 120,60 100,90 C80,60 85,40 100,10 Z" />
-          <circle cx="100" cy="25" r="2" fill="#FFE082" />
-        </g>
-      ))}
-      <circle cx="100" cy="100" r="40" strokeWidth="2" />
-      <circle cx="100" cy="100" r="25" strokeWidth="1" strokeDasharray="3,3" />
-      <polygon points="100,75 118,90 110,112 90,112 82,90" fill="url(#goldGradient)" opacity="0.3"/>
-    </g>
-  </svg>
-);
-
-export default function App() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [lang, setLang] = useState('ur'); // 'ur' or 'en'
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  // Parallax 3D tilt interaction states
-  const [rotateX, setRotateX] = useState(0);
-  const [rotateY, setRotateY] = useState(0);
-
-  const audioContextRef = useRef(null);
-
-  const playSoundEffect = (type) => {
-    try {
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      const ctx = audioContextRef.current;
-      if (ctx.state === 'suspended') {
-        ctx.resume();
-      }
-
-      const now = ctx.currentTime;
-
-      if (type === 'unfold') {
-        // Soft royal chime sound
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(329.63, now); // E4
-        osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.8); // E5
-        osc.frequency.exponentialRampToValueAtTime(987.77, now + 1.2); // B5
-
-        gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.15, now + 0.2);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.8);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now);
-        osc.stop(now + 1.8);
-      } else if (type === 'click') {
-        // Wax seal break sound effect
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(180, now);
-        osc.frequency.exponentialRampToValueAtTime(40, now + 0.15);
-
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now);
-        osc.stop(now + 0.15);
-      }
-    } catch (e) {
-      console.log('Audio playback initialized');
+  <style>
+    .font-urdu {
+      font-family: 'Gulzar', 'Noto Nastaliq Urdu', serif;
     }
-  };
-
-  // Handle Mouse Parallax Tilt
-  const handleMouseMove = (e) => {
-    if (isOpen) return; // Freeze tilt once opened for easy reading
-    const card = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - card.left - card.width / 2;
-    const y = e.clientY - card.top - card.height / 2;
-    setRotateY(x / 25);
-    setRotateX(-y / 25);
-  };
-
-  const handleMouseLeave = () => {
-    setRotateX(0);
-    setRotateY(0);
-  };
-
-  const toggleOpen = () => {
-    if (!isOpen) {
-      playSoundEffect('click');
-      setTimeout(() => playSoundEffect('unfold'), 200);
-      setIsOpen(true);
-      if (!isAudioPlaying) setIsAudioPlaying(true);
-    } else {
-      setIsOpen(false);
+    .font-serif-custom {
+      font-family: 'Playfair Display', serif;
     }
-  };
-
-  const content = {
-    ur: {
-      bismillah: "بِسْمِ اللهِ الرَّحْمٰنِ الرَّحِيْمِ",
-      invitationTag: "دعوتِ طعام",
-      subtitle: "بعد از شادی تقریبِ مسرت",
-      groomAndBride: "وسیم رضا اور زیب النساء",
-      family: "(بمع اہل و عیال)",
-      greeting: "السلام علیکم ورحمۃ اللہ وبرکاتہ",
-      mainMessage: "اللہ تعالیٰ کے فضل و کرم سے، وسیم رضا اور زیب النساء کی شادی کی خوشی میں ہم آپ کو اپنے گھر کھانے پر مدعو کرنے کی سعادت حاصل کر رہے ہیں۔",
-      flexibilityNotice: "اس دعوت کے لیے کوئی خاص تاریخ یا وقت مقرر نہیں ہے۔ آپ جب بھی، اپنی سہولت اور خواہش کے مطابق تشریف لانا چاہیں، ہمارے دل اور گھر کے دروازے آپ کے لیے کھلے ہیں۔",
-      presenceNote: "آپ کی آمد ہمارے لیے باعثِ مسرت و افتخار ہوگی۔",
-      openBtn: "دعوت نامہ کھولیں",
-      resetBtn: "دوبارہ بند کریں",
-      whatsappBtn: "واٹس ایپ پر مطلع کریں",
-      copyLinkBtn: "دعوت نامہ کا لنک کاپی کریں",
-      copiedText: "لنک کاپی ہو گیا!",
-      langSwitch: "English",
-      dir: "rtl"
-    },
-    en: {
-      bismillah: "In the name of Allah, the Most Gracious, the Most Merciful",
-      invitationTag: "INVITATION FOR DINNER",
-      subtitle: "Post-Wedding Joyful Gathering",
-      groomAndBride: "Wasim Raza & Zebun Nisa",
-      family: "(with family)",
-      greeting: "Greetings with Peace and Blessings of Allah",
-      mainMessage: "By the Grace of Almighty Allah, we cordially invite you to join us for a Post-Wedding Dinner to celebrate the auspicious union of Wasim Raza and Zebun Nisa.",
-      flexibilityNotice: "There is no fixed date or time set for this dinner! You are most welcome to visit us at any date or time that is convenient for you.",
-      presenceNote: "Your presence will be our greatest honor and joy.",
-      openBtn: "Unfold Invitation",
-      resetBtn: "Close Gatefold",
-      whatsappBtn: "Confirm via WhatsApp",
-      copyLinkBtn: "Share Invitation Link",
-      copiedText: "Link Copied!",
-      langSwitch: "اردو",
-      dir: "ltr"
+    .bg-royal-pattern {
+      background-color: #0b1329;
+      background-image: radial-gradient(circle at 50% 50%, #1a2a4a 0%, #080d1a 100%);
     }
-  };
+  </style>
+</head>
+<body class="bg-royal-pattern text-slate-100 min-h-screen flex items-center justify-center p-4">
 
-  const t = content[lang];
+  <div id="root"></div>
 
-  const handleWhatsApp = () => {
-    playSoundEffect('click');
-    const msgUr = `السلام علیکم!\n\nوسیم رضا اور زیب النساء کی شادی کا خوبصورت دعوت نامہ موصول ہوا۔\n\nانشاء اللہ ہم اپنی سہولت کے مطابق جلد ہی تشریف لائیں گے۔ بہت بہت شکریہ!`;
-    const msgEn = `Assalamu Alaikum!\n\nThank you for the warm Post-Wedding Dinner invitation for Wasim Raza & Zebun Nisa.\n\nInshaAllah we will plan a visit at our earliest convenience!`;
-    const message = lang === 'ur' ? msgUr : msgEn;
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
-  };
+  <script type="text/babel">
+    const { useState } = React;
 
-  const handleCopyLink = () => {
-    playSoundEffect('click');
-    navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  };
+    function App() {
+      const [isOpen, setIsOpen] = useState(false);
+      const [lang, setLang] = useState('ur');
 
-  return (
-    <div className="min-h-screen bg-[#050811] text-amber-100 flex flex-col justify-between items-center p-3 sm:p-6 relative overflow-hidden select-none font-serif">
-      
-      {}
-      {/* Radial Gold Lighting Effects */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.18)_0%,transparent_75%)] pointer-events-none"></div>
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-red-950/20 rounded-full blur-[120px] pointer-events-none"></div>
-      <div className="absolute top-1/3 right-0 w-96 h-96 bg-amber-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+      const handleWhatsAppRSVP = () => {
+        const message = encodeURIComponent(
+          lang === 'ur'
+            ? "السلام علیکم! دعوت نامہ ملا، بہت شکریہ۔ انشاء اللہ ہم جلد مبارکباد دینے اور طعام میں شرکت کی تاریخ طے کرنے کے لیے آپ سے رابطہ کریں گے۔"
+            : "Greetings! Thank you so much for the dinner invitation. We will reach out soon to convey our congratulations and coordinate a convenient time."
+        );
+        window.open(`https://wa.me/?text=${message}`, '_blank');
+      };
 
-      {/* Floating Ambient Gold Dust Particles */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-40">
-        <div className="absolute top-10 left-[10%] text-amber-300 animate-pulse text-xs">✦</div>
-        <div className="absolute top-1/4 right-[15%] text-amber-200 animate-bounce text-xs opacity-75">✧</div>
-        <div className="absolute top-2/3 left-[20%] text-yellow-100 animate-ping text-[8px]">✦</div>
-        <div className="absolute bottom-12 right-[25%] text-amber-400 animate-pulse text-sm">✧</div>
-        <div className="absolute top-1/2 left-[80%] text-amber-300 text-xs">✦</div>
-      </div>
-
-      {}
-      <header className="w-full max-w-3xl flex justify-between items-center z-30 py-2">
-        {/* Subtle Brand/Monogram */}
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full border border-amber-400/60 bg-gradient-to-br from-amber-950 via-slate-900 to-black flex items-center justify-center shadow-[0_0_12px_rgba(212,175,55,0.3)]">
-            <span className="text-amber-300 font-bold text-xs tracking-tighter">W&Z</span>
+      return (
+        <div className="w-full max-w-2xl mx-auto my-8">
+          {/* Header Controls */}
+          <div className="flex justify-between items-center mb-6 px-2">
+            <button 
+              onClick={() => setLang(lang === 'ur' ? 'en' : 'ur')}
+              className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-4 py-2 rounded-full text-sm transition-all"
+            >
+              {lang === 'ur' ? 'English Version' : 'اردو میں دیکھیں'}
+            </button>
+            <div className="text-amber-400 text-xs tracking-widest uppercase font-semibold">
+              Digital Post-Wedding Invitation
+            </div>
           </div>
-          <span className="text-[11px] uppercase tracking-[0.2em] text-amber-300/80 font-sans hidden sm:inline-block">
-            Post-Wedding Dinner
-          </span>
-        </div>
 
-        {/* Action Controls (Audio & Language) */}
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => {
-              playSoundEffect('click');
-              setIsAudioPlaying(!isAudioPlaying);
-            }}
-            className="p-2 rounded-full bg-slate-900/80 border border-amber-400/40 text-amber-300 hover:border-amber-300 transition shadow-md"
-            title="Toggle Sound"
-          >
-            {isAudioPlaying ? <Volume2 className="w-4 h-4 text-amber-400" /> : <VolumeX className="w-4 h-4 opacity-50" />}
-          </button>
-
-          <button 
-            onClick={() => {
-              playSoundEffect('click');
-              setLang(lang === 'ur' ? 'en' : 'ur');
-            }}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-950 via-slate-900 to-amber-950 border border-amber-400/60 text-amber-200 hover:border-amber-300 transition text-xs font-sans tracking-wide shadow-[0_0_15px_rgba(212,175,55,0.2)]"
-          >
-            <Globe className="w-3.5 h-3.5 text-amber-400" />
-            <span>{t.langSwitch}</span>
-          </button>
-        </div>
-      </header>
-
-      {}
-      <main className="flex-1 flex flex-col items-center justify-center w-full max-w-2xl z-20 my-4 perspective-1000">
-        
-        <div 
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          style={{
-            transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
-            transition: isOpen ? 'transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)' : 'transform 0.1s ease-out'
-          }}
-          className="w-full relative transition-all duration-700 transform-style-3d"
-        >
-
-          {/* MAIN INNER INVITATION CARD (Revealed when open) */}
-          <div className={`w-full bg-gradient-to-b from-[#0b0e1b] via-[#12172b] to-[#080a14] border-2 border-amber-400/80 rounded-3xl p-6 sm:p-10 shadow-[0_0_80px_rgba(212,175,55,0.25)] relative overflow-hidden transition-all duration-1000 ${isOpen ? 'opacity-100 scale-100' : 'opacity-90 scale-95'}`}>
-            
-            {/* Corner Arabesque Filigree Highlights */}
-            <ArabesqueCorner className="absolute top-0 left-0" />
-            <ArabesqueCorner className="absolute top-0 right-0 transform scale-x-[-1]" />
-            <ArabesqueCorner className="absolute bottom-0 left-0 transform scale-y-[-1]" />
-            <ArabesqueCorner className="absolute bottom-0 right-0 transform scale-x-[-1] scale-y-[-1]" />
-
-            {/* Inner Gold Foil Border */}
-            <div className="border border-amber-400/30 rounded-2xl p-4 sm:p-8 relative bg-black/30 backdrop-blur-sm" dir={t.dir}>
+          {!isOpen ? (
+            /* Envelope State */
+            <div 
+              onClick={() => setIsOpen(true)}
+              className="cursor-pointer bg-gradient-to-br from-amber-900/40 via-slate-900 to-amber-950/60 border-2 border-amber-500/50 rounded-2xl p-10 text-center shadow-2xl hover:border-amber-400 transition-all transform hover:-translate-y-1 relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(#d97706_1px,transparent_1px)] [background-size:16px_16px] opacity-10"></div>
               
-              {/* Top Bismillah Header */}
-              <div className="text-center space-y-2 mb-6">
-                <p className="text-amber-200/90 text-sm sm:text-base tracking-widest font-serif">
-                  {t.bismillah}
-                </p>
-                <div className="flex items-center justify-center gap-2">
-                  <div className="h-px w-12 bg-gradient-to-r from-transparent to-amber-400/60"></div>
-                  <span className="text-[10px] sm:text-xs text-amber-300 uppercase tracking-[0.3em] font-sans font-semibold">
-                    {t.invitationTag}
-                  </span>
-                  <div className="h-px w-12 bg-gradient-to-l from-transparent to-amber-400/60"></div>
-                </div>
+              <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-tr from-amber-600 to-yellow-300 flex items-center justify-center shadow-lg border-2 border-amber-200">
+                <span className="text-slate-950 font-bold text-2xl font-serif-custom">W & Z</span>
               </div>
 
-              {/* Central Gold Rosette Ornament */}
-              <div className="flex justify-center my-2">
-                <IslamicRosette />
+              <h2 className={`text-2xl md:text-3xl font-bold text-amber-200 mb-2 ${lang === 'ur' ? 'font-urdu' : 'font-serif-custom'}`}>
+                {lang === 'ur' ? 'دعوتِ طعام' : 'Invitation for Dinner'}
+              </h2>
+              
+              <p className="text-amber-400/80 text-sm mb-6">
+                {lang === 'ur' ? 'کارڈ کھولنے کے لیے کلک کریں' : 'Click to Open Invitation'}
+              </p>
+
+              <div className="inline-block bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-bold px-6 py-2 rounded-full shadow-md text-sm">
+                Open Card ✨
               </div>
+            </div>
+          ) : (
+            /* Open Card State */
+            <div className="bg-slate-900/90 border-2 border-amber-500/60 rounded-2xl p-8 md:p-12 shadow-2xl relative overflow-hidden backdrop-blur-md transition-all">
+              {/* Corner Ornaments */}
+              <div className="absolute top-3 left-3 text-amber-500/40 text-xl">✦</div>
+              <div className="absolute top-3 right-3 text-amber-500/40 text-xl">✦</div>
+              <div className="absolute bottom-3 left-3 text-amber-500/40 text-xl">✦</div>
+              <div className="absolute bottom-3 right-3 text-amber-500/40 text-xl">✦</div>
 
-              {/* Groom & Bride Names - MASSIVE GOLD SHIMMER CALLIGRAPHY */}
-              <div className="text-center my-6 py-4 relative">
-                <h1 className="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-yellow-200 via-amber-300 to-amber-100 leading-tight tracking-wide drop-shadow-[0_2px_10px_rgba(212,175,55,0.3)]">
-                  {t.groomAndBride}
-                </h1>
-                
-                {/* Family Note Gracefully Positioned Beneath */}
-                <p className="text-amber-300/90 text-sm sm:text-lg font-serif italic mt-2 tracking-widest">
-                  {t.family}
-                </p>
-              </div>
+              {lang === 'ur' ? (
+                /* URDU CONTENT WITH NASTALIQ FONTS */
+                <div className="text-center font-urdu leading-loose">
+                  <div className="text-amber-400 text-xl mb-4">﷽</div>
+                  
+                  <h1 className="text-2xl text-amber-300 mb-2">دعوتِ طعام</h1>
+                  
+                  <div className="my-6 py-4 border-y border-amber-500/30">
+                    <div className="text-4xl md:text-5xl text-amber-200 font-bold mb-2">
+                      وسیم رضا اور زیب النساء
+                    </div>
+                    <div className="text-lg text-amber-400/90">
+                      (بمع اہل و عیال)
+                    </div>
+                  </div>
 
-              {/* Invitation Text Body */}
-              <div className="text-center space-y-4 text-slate-200 text-xs sm:text-sm leading-relaxed my-6 max-w-xl mx-auto font-serif">
-                <p className="text-amber-300 font-semibold text-sm sm:text-base">
-                  {t.greeting}
-                </p>
-                <p className="text-slate-200/95 leading-relaxed">
-                  {t.mainMessage}
-                </p>
-
-                {/* NO DATES / NO TIME - Highlighted Flexibility Banner */}
-                <div className="my-6 p-4 rounded-xl bg-gradient-to-r from-amber-950/70 via-slate-900/90 to-amber-950/70 border border-amber-400/50 text-amber-200 text-xs sm:text-sm shadow-inner relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-amber-400/80 to-transparent"></div>
-                  <Sparkles className="w-4 h-4 text-amber-300 mx-auto mb-1.5 animate-pulse" />
-                  <p className="font-serif leading-relaxed">
-                    {t.flexibilityNotice}
+                  <p className="text-slate-200 text-lg md:text-xl my-6 max-w-lg mx-auto">
+                    السلام علیکم ورحمۃ اللہ وبرکاتہ<br/>
+                    ہم آپ کو وسیم رضا اور زیب النساء کی شادی کے بعد، اپنی خوشیوں میں شریک کرنے کے لیے ایک پرُتکلف عشائیہ (Post-Wedding Dinner) میں شرکت کی صمیمِ قلب سے دعوت دیتے ہیں۔
                   </p>
-                </div>
 
-                <p className="text-amber-300/80 italic text-xs sm:text-sm">
-                  {t.presenceNote}
-                </p>
-              </div>
+                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 my-6 text-amber-300 text-base md:text-lg">
+                    آپ کے لیے جو بھی وقت اور تاریخ مناسب ہو، ہمیں مطلع فرمائیں، تاکہ ہم مل کر یہ خوشی کا لمحہ یادگار بنا سکیں۔ آپ کی تشریف آوری ہمارے لیے باعثِ افتخار ہوگی۔
+                  </div>
+                </div>
+              ) : (
+                /* ENGLISH CONTENT */
+                <div className="text-center font-serif-custom">
+                  <div className="text-amber-400 text-sm tracking-widest uppercase mb-4">In the Name of Allah</div>
+                  
+                  <h1 className="text-3xl text-amber-300 mb-2 font-bold">Invitation for Dinner</h1>
+                  
+                  <div className="my-6 py-4 border-y border-amber-500/30">
+                    <div className="text-3xl md:text-4xl text-amber-200 font-bold mb-1">
+                      Wasim Raza & Zebun Nisa
+                    </div>
+                    <div className="text-base text-amber-400/90 italic">
+                      (with family)
+                    </div>
+                  </div>
+
+                  <p className="text-slate-200 text-base md:text-lg my-6 max-w-lg mx-auto leading-relaxed">
+                    Greetings with Peace, Mercy, and Blessings of Allah.<br/>
+                    We cordially invite you to a formal Post-Wedding Dinner to join us in celebrating the joyful marriage of Wasim Raza and Zebun Nisa.
+                  </p>
+
+                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 my-6 text-amber-300 text-sm md:text-base">
+                    Please inform us of any date and time that is convenient for you, so that we can make this joyful moment memorable together. Your honorable presence will be a matter of pride for us.
+                  </div>
+                </div>
+              )}
 
               {/* Action Buttons */}
-              <div className="mt-8 space-y-3 max-w-md mx-auto pt-2">
+              <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <button 
-                  onClick={handleWhatsApp}
-                  className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm tracking-wider uppercase shadow-[0_0_20px_rgba(16,185,129,0.3)] transition duration-300 flex items-center justify-center gap-2 group"
+                  onClick={handleWhatsAppRSVP}
+                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-6 py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm"
                 >
-                  <Send className="w-4 h-4 group-hover:translate-x-1 transition" />
-                  <span>{t.whatsappBtn}</span>
+                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+                  </svg>
+                  {lang === 'ur' ? 'واتس ایپ پر مطلع کریں' : 'Respond via WhatsApp'}
                 </button>
 
-                <div className="flex gap-2">
-                  <button 
-                    onClick={handleCopyLink}
-                    className="flex-1 py-2.5 px-4 rounded-xl bg-amber-950/40 border border-amber-400/40 hover:border-amber-300 text-amber-200 text-xs transition flex items-center justify-center gap-2"
-                  >
-                    {copied ? (
-                      <>
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        <span className="text-emerald-400">{t.copiedText}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Share2 className="w-3.5 h-3.5 text-amber-400" />
-                        <span>{t.copyLinkBtn}</span>
-                      </>
-                    )}
-                  </button>
-
-                  <button 
-                    onClick={toggleOpen}
-                    className="py-2.5 px-4 rounded-xl bg-slate-900 border border-amber-400/40 hover:border-amber-300 text-amber-300/80 text-xs transition flex items-center justify-center gap-1.5"
-                    title={t.resetBtn}
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">{t.resetBtn}</span>
-                  </button>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {}
-          {!isOpen && (
-            <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-auto">
-              
-              {/* Left Gatefold Door */}
-              <div 
-                onClick={toggleOpen}
-                className="w-1/2 h-full bg-gradient-to-br from-[#121626] via-[#191e33] to-[#0c0f1c] border-y-2 border-l-2 border-amber-400/80 rounded-l-3xl shadow-2xl relative overflow-hidden group cursor-pointer transition-transform duration-700 ease-in-out origin-left"
-              >
-                <ArabesqueCorner className="absolute top-0 left-0" />
-                <ArabesqueCorner className="absolute bottom-0 left-0 transform scale-y-[-1]" />
-                <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-black/60 to-transparent"></div>
-                <div className="absolute top-1/2 -translate-y-1/2 right-3 text-amber-400/30 text-2xl font-serif">
-                  ✾
-                </div>
-              </div>
-
-              {/* Right Gatefold Door */}
-              <div 
-                onClick={toggleOpen}
-                className="w-1/2 h-full bg-gradient-to-bl from-[#121626] via-[#191e33] to-[#0c0f1c] border-y-2 border-r-2 border-amber-400/80 rounded-r-3xl shadow-2xl relative overflow-hidden group cursor-pointer transition-transform duration-700 ease-in-out origin-right"
-              >
-                <ArabesqueCorner className="absolute top-0 right-0 transform scale-x-[-1]" />
-                <ArabesqueCorner className="absolute bottom-0 right-0 transform scale-x-[-1] scale-y-[-1]" />
-                <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-black/60 to-transparent"></div>
-                <div className="absolute top-1/2 -translate-y-1/2 left-3 text-amber-400/30 text-2xl font-serif">
-                  ✾
-                </div>
-              </div>
-
-              {/* Central Royal Metallic Wax Seal Button */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 text-center">
                 <button 
-                  onClick={toggleOpen}
-                  className="group relative focus:outline-none"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-amber-300/80 border border-amber-500/30 font-semibold px-6 py-3 rounded-xl transition-all text-sm"
                 >
-                  {/* Outer Seal Glow */}
-                  <div className="absolute -inset-3 bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-600 rounded-full blur-md opacity-70 group-hover:opacity-100 transition duration-500 animate-pulse"></div>
-                  
-                  {/* Wax Seal Body */}
-                  <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-red-950 via-amber-900 to-red-950 border-2 border-amber-300 flex flex-col items-center justify-center shadow-[0_0_30px_rgba(0,0,0,0.8)] transform group-hover:scale-105 transition duration-300">
-                    <IslamicRosette className="w-12 h-12 opacity-80" />
-                    <span className="text-[9px] uppercase tracking-widest text-amber-200 font-bold font-sans mt-0.5">
-                      Open
-                    </span>
-                  </div>
+                  {lang === 'ur' ? 'بند کریں' : 'Close Card'}
                 </button>
-                <p className="text-amber-200/80 text-xs mt-3 font-serif tracking-wider drop-shadow-md">
-                  {t.openBtn}
-                </p>
               </div>
-
             </div>
           )}
-
         </div>
+      );
+    }
 
-      </main>
-
-      {}
-      <footer className="w-full max-w-md text-center text-[10px] text-amber-400/40 z-20 py-2 font-sans">
-        <p>Post-Wedding Dinner • Wasim Raza & Zebun Nisa</p>
-      </footer>
-
-    </div>
-  );
-}
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
